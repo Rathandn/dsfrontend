@@ -5,11 +5,14 @@ import { motion } from 'framer-motion'
 import { Filter } from 'lucide-react'
 import { fetchProducts } from '../api/products'
 import ProductCard from '../components/ProductCard'
+import { Slider } from '@mui/material'
 
 const Products = () => {
   const { category } = useParams()
   const [filtered, setFiltered] = useState([])
   const [activeCategory, setActiveCategory] = useState(category || 'all')
+  const [priceRange, setPriceRange] = useState([0, 1000]) // Default price range
+  const [sortOrder, setSortOrder] = useState('asc') // Default to ascending order
 
   const { data: products = [], isLoading, error } = useQuery({
     queryKey: ['products'],
@@ -18,16 +21,29 @@ const Products = () => {
 
   useEffect(() => {
     if (products.length > 0) {
+      // Dynamically calculate the max price from products
+      const maxPrice = Math.max(...products.map(product => product.price))
+
+      // Set the initial price range to 0 and maxPrice based on product data
+      setPriceRange([0, maxPrice])
+
+      let filteredProducts = products.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
+      
       if (category && category !== 'all') {
         setActiveCategory(category)
-        setFiltered(
-          products.filter(p => p.category?.slug?.toLowerCase() === category.toLowerCase())
-        )
-      } else {
-        setFiltered(products)
+        filteredProducts = filteredProducts.filter(p => p.category?.slug?.toLowerCase() === category.toLowerCase())
       }
+      
+      // Sort by price if needed
+      if (sortOrder === 'asc') {
+        filteredProducts.sort((a, b) => a.price - b.price)
+      } else if (sortOrder === 'desc') {
+        filteredProducts.sort((a, b) => b.price - a.price)
+      }
+
+      setFiltered(filteredProducts)
     }
-  }, [category, products])
+  }, [category, products, priceRange, sortOrder])
 
   const handleFilter = (catSlug) => {
     setActiveCategory(catSlug)
@@ -60,17 +76,13 @@ const Products = () => {
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-12 text-center"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Our Collection</h1>
           <p className="text-lg text-gray-600">Explore our curated selection of beautiful sarees</p>
         </motion.div>
 
-        {/* Filter buttons */}
-        <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-4">
+        {/* Filter and Sort Controls */}
+        <div className="flex items-center gap-6 mb-8 overflow-x-auto pb-4">
           <Filter className="w-5 h-5 text-gray-600 flex-shrink-0" />
           {categories.map(cat => (
             <button
@@ -85,13 +97,39 @@ const Products = () => {
               {cat.name}
             </button>
           ))}
+
+          {/* Sort by Price Dropdown */}
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="px-6 py-2 rounded-full font-semibold bg-gray-200 text-gray-700"
+          >
+            <option value="asc">Price: Low to High</option>
+            <option value="desc">Price: High to Low</option>
+          </select>
         </div>
 
-        {/* Product grid */}
-        <motion.div
-          layout
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-        >
+        {/* Price Range Filter */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Filter by Price</h3>
+          <Slider
+            value={priceRange}
+            onChange={(e, newValue) => setPriceRange(newValue)}
+            valueLabelDisplay="auto"
+            valueLabelFormat={(value) => `₹${value}`}  // Indian currency format
+            min={0}
+            max={Math.max(...products.map(product => product.price))}  // Dynamically calculated max price
+            step={10}
+            className="w-full"
+          />
+          <div className="flex justify-between mt-4">
+            <span>₹{priceRange[0]}</span>
+            <span>₹{priceRange[1]}</span>
+          </div>
+        </div>
+
+        {/* Product Grid */}
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filtered.map((product, idx) => (
             <ProductCard key={product._id} product={product} index={idx} />
           ))}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { Filter } from 'lucide-react'
@@ -9,65 +9,71 @@ import { Slider } from '@mui/material'
 
 const Products = () => {
   const { category } = useParams()
-  const [filtered, setFiltered] = useState([]) // Filtered products state
-  const [activeCategory, setActiveCategory] = useState(category || 'all') // Active category state
-  const [priceRange, setPriceRange] = useState([0, 1000]) // Default price range
-  const [sortOrder, setSortOrder] = useState('asc') // Default to ascending order
+  const navigate = useNavigate()
+
+  const [filtered, setFiltered] = useState([])
+  const [activeCategory, setActiveCategory] = useState(category || 'all')
+  const [priceRange, setPriceRange] = useState([0, 1000])
+  const [maxPrice, setMaxPrice] = useState(1000)
+  const [sortOrder, setSortOrder] = useState('asc')
 
   const { data: products = [], isLoading, error } = useQuery({
     queryKey: ['products'],
     queryFn: fetchProducts,
   })
 
-  // Effect to set price range only once when products are fetched
+  // 🔧 Recalculate maxPrice and reset priceRange when category changes
   useEffect(() => {
-    if (products.length > 0) {
-      // Dynamically calculate the max price from products only once
-      const maxPrice = Math.max(...products.map(product => product.price))
+    if (!products.length) return
 
-      if (priceRange[1] !== maxPrice) {
-        setPriceRange([0, maxPrice])
-      }
+    let categoryFiltered = [...products]
 
-      // Filter products based on price range and category
-      let filteredProducts = products.filter(
-        (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
+    if (category && category !== 'all') {
+      categoryFiltered = categoryFiltered.filter(
+        (p) => p.category?.slug?.toLowerCase() === category.toLowerCase()
       )
-
-      // Filter by category if applicable
-      if (category && category !== 'all') {
-        setActiveCategory(category)
-        filteredProducts = filteredProducts.filter(
-          (p) => p.category?.slug?.toLowerCase() === category.toLowerCase()
-        )
-      }
-
-      // Sort by price if needed
-      if (sortOrder === 'asc') {
-        filteredProducts.sort((a, b) => a.price - b.price)
-      } else if (sortOrder === 'desc') {
-        filteredProducts.sort((a, b) => b.price - a.price)
-      }
-
-      // Update filtered state with the filtered products
-      setFiltered(filteredProducts)
     }
-  }, [products, category, priceRange, sortOrder]) // Dependencies: products, category, priceRange, sortOrder
 
-  // Handle category filter change
+    const computedMax = Math.max(...categoryFiltered.map((p) => p.price), 0)
+    setMaxPrice(computedMax)
+
+    // ✅ Reset price range to full range of current category
+    setPriceRange([0, computedMax])
+  }, [products, category])
+
+  // 🔁 Filter products when dependencies change
+  useEffect(() => {
+    if (!products.length) return
+
+    let updated = [...products]
+
+    if (category && category !== 'all') {
+      setActiveCategory(category)
+      updated = updated.filter(
+        (p) => p.category?.slug?.toLowerCase() === category.toLowerCase()
+      )
+    }
+
+    updated = updated.filter(
+      (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
+    )
+
+    if (sortOrder === 'asc') {
+      updated.sort((a, b) => a.price - b.price)
+    } else {
+      updated.sort((a, b) => b.price - a.price)
+    }
+
+    setFiltered(updated)
+  }, [products, category, priceRange, sortOrder])
+
+  // 🧭 Handle category filter button
   const handleFilter = (catSlug) => {
     setActiveCategory(catSlug)
-    if (catSlug === 'all') {
-      setFiltered(products)
-    } else {
-      setFiltered(products.filter((p) => p.category?.slug === catSlug))
-    }
+    navigate(`/products/${catSlug}`)
   }
 
-  if (isLoading) return <p className="text-center mt-10 text-gray-500">Loading products...</p>
-  if (error) return <p className="text-center mt-10 text-red-500">Failed to load products</p>
-
-  // Build category list dynamically
+  // 🧾 Build category list
   const categories = [
     { id: 'all', slug: 'all', name: 'All' },
     ...Array.from(
@@ -82,6 +88,9 @@ const Products = () => {
       name: cat.name,
     })),
   ]
+
+  if (isLoading) return <p className="text-center mt-10 text-gray-500">Loading products...</p>
+  if (error) return <p className="text-center mt-10 text-red-500">Failed to load products</p>
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
@@ -126,9 +135,9 @@ const Products = () => {
             value={priceRange}
             onChange={(e, newValue) => setPriceRange(newValue)}
             valueLabelDisplay="auto"
-            valueLabelFormat={(value) => `₹${value}`} // Indian currency format
+            valueLabelFormat={(value) => `₹${value}`}
             min={0}
-            max={Math.max(...products.map((product) => product.price))} // Dynamically calculated max price
+            max={maxPrice}
             step={10}
             className="w-full"
           />

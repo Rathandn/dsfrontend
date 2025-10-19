@@ -121,9 +121,18 @@ const UploadProduct = () => {
                 />
               </div>
 
-              {/* Category Dropdown */}
+              {/* Category Dropdown with Manage Link */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-semibold text-gray-700">Category</label>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/admin/categories')}
+                    className="text-xs text-primary hover:text-teal-700 font-semibold underline transition-colors"
+                  >
+                    Manage Categories
+                  </button>
+                </div>
                 {isLoading ? (
                   <p className="text-gray-500">Loading categories...</p>
                 ) : (

@@ -9,8 +9,8 @@ import { Slider } from '@mui/material'
 
 const Products = () => {
   const { category } = useParams()
-  const [filtered, setFiltered] = useState([])
-  const [activeCategory, setActiveCategory] = useState(category || 'all')
+  const [filtered, setFiltered] = useState([]) // Filtered products state
+  const [activeCategory, setActiveCategory] = useState(category || 'all') // Active category state
   const [priceRange, setPriceRange] = useState([0, 1000]) // Default price range
   const [sortOrder, setSortOrder] = useState('asc') // Default to ascending order
 
@@ -19,21 +19,29 @@ const Products = () => {
     queryFn: fetchProducts,
   })
 
+  // Effect to set price range only once when products are fetched
   useEffect(() => {
     if (products.length > 0) {
-      // Dynamically calculate the max price from products
+      // Dynamically calculate the max price from products only once
       const maxPrice = Math.max(...products.map(product => product.price))
 
-      // Set the initial price range to 0 and maxPrice based on product data
-      setPriceRange([0, maxPrice])
+      if (priceRange[1] !== maxPrice) {
+        setPriceRange([0, maxPrice])
+      }
 
-      let filteredProducts = products.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
-      
+      // Filter products based on price range and category
+      let filteredProducts = products.filter(
+        (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
+      )
+
+      // Filter by category if applicable
       if (category && category !== 'all') {
         setActiveCategory(category)
-        filteredProducts = filteredProducts.filter(p => p.category?.slug?.toLowerCase() === category.toLowerCase())
+        filteredProducts = filteredProducts.filter(
+          (p) => p.category?.slug?.toLowerCase() === category.toLowerCase()
+        )
       }
-      
+
       // Sort by price if needed
       if (sortOrder === 'asc') {
         filteredProducts.sort((a, b) => a.price - b.price)
@@ -41,16 +49,18 @@ const Products = () => {
         filteredProducts.sort((a, b) => b.price - a.price)
       }
 
+      // Update filtered state with the filtered products
       setFiltered(filteredProducts)
     }
-  }, [category, products, priceRange, sortOrder])
+  }, [products, category, priceRange, sortOrder]) // Dependencies: products, category, priceRange, sortOrder
 
+  // Handle category filter change
   const handleFilter = (catSlug) => {
     setActiveCategory(catSlug)
     if (catSlug === 'all') {
       setFiltered(products)
     } else {
-      setFiltered(products.filter(p => p.category?.slug === catSlug))
+      setFiltered(products.filter((p) => p.category?.slug === catSlug))
     }
   }
 
@@ -63,10 +73,10 @@ const Products = () => {
     ...Array.from(
       new Map(
         products
-          .filter(p => p.category)
-          .map(p => [p.category._id, p.category])
+          .filter((p) => p.category)
+          .map((p) => [p.category._id, p.category])
       ).values()
-    ).map(cat => ({
+    ).map((cat) => ({
       id: cat._id,
       slug: cat.slug,
       name: cat.name,
@@ -84,7 +94,7 @@ const Products = () => {
         {/* Filter and Sort Controls */}
         <div className="flex items-center gap-6 mb-8 overflow-x-auto pb-4">
           <Filter className="w-5 h-5 text-gray-600 flex-shrink-0" />
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => handleFilter(cat.slug)}
@@ -116,9 +126,9 @@ const Products = () => {
             value={priceRange}
             onChange={(e, newValue) => setPriceRange(newValue)}
             valueLabelDisplay="auto"
-            valueLabelFormat={(value) => `₹${value}`}  // Indian currency format
+            valueLabelFormat={(value) => `₹${value}`} // Indian currency format
             min={0}
-            max={Math.max(...products.map(product => product.price))}  // Dynamically calculated max price
+            max={Math.max(...products.map((product) => product.price))} // Dynamically calculated max price
             step={10}
             className="w-full"
           />

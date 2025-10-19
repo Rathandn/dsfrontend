@@ -104,11 +104,16 @@ const Home = () => {
                   onClick={() => navigate(`/products/${cat.slug}`)}
                   className="relative h-80 rounded-2xl overflow-hidden cursor-pointer group"
                 >
-                  <img
-                    src={cat.image}
-                    alt={cat.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
+                {cat.image && cat.image !== "" ? (
+  <img
+    src={cat.image}
+    alt={cat.name}
+    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+  />
+) : (
+  <div className="w-full h-full bg-gray-200 flex items-center justify-center">No Image</div> // You can render a placeholder here
+)}
+
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6">
                     <div>
                       <h3 className="text-2xl font-bold text-white mb-2">{cat.name}</h3>

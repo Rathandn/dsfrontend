@@ -6,6 +6,7 @@ import { Filter } from 'lucide-react'
 import { fetchProducts } from '../api/products'
 import ProductCard from '../components/ProductCard'
 import { Slider } from '@mui/material'
+import Loader from '../components/loader'
 
 const Products = () => {
   const { category } = useParams()
@@ -89,7 +90,7 @@ const Products = () => {
     })),
   ]
 
-  if (isLoading) return <p className="text-center mt-10 text-gray-500">Loading products...</p>
+  if (isLoading) return <p className="text-center mt-10 text-gray-500"><Loader/></p>
   if (error) return <p className="text-center mt-10 text-red-500">Failed to load products</p>
 
   return (

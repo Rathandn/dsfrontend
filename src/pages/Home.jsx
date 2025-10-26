@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, Sparkles, Heart, ShoppingBag } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
+import Loader from '../components/loader'
 
 const Home = () => {
   const navigate = useNavigate()
@@ -91,7 +92,7 @@ const Home = () => {
           </motion.h2>
 
           {isLoading ? (
-            <p className="text-center text-gray-500">Loading categories...</p>
+            <p className="text-center text-gray-500"><Loader/></p>
           ) : (
             <div className="grid md:grid-cols-3 gap-8">
               {categories.map((cat, idx) => (

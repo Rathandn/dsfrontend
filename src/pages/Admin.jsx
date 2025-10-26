@@ -9,6 +9,7 @@ import {
   Trash2,
   Filter,
   X,
+  Loader,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import API from '../api/axiosInstance'
@@ -97,7 +98,7 @@ const Admin = () => {
 
   if (isLoading) {
     return (
-      <p className="text-center mt-20 text-gray-600">Loading products...</p>
+      <p className="text-center mt-20 text-gray-600"><Loader/></p>
     )
   }
 

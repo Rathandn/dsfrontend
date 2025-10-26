@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Plus, Trash2, Loader2, Check } from 'lucide-react'
 import API from '../api/axiosInstance'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import Loader from '../components/loader'
 
 const AdminCategories = () => {
   const navigate = useNavigate()
@@ -164,7 +165,7 @@ const AdminCategories = () => {
           {/* Category List */}
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Existing Categories</h2>
           {isLoading ? (
-            <p className="text-gray-500">Loading categories...</p>
+            <p className="text-gray-500"><Loader/></p>
           ) : categories.length === 0 ? (
             <p className="text-gray-500">No categories found.</p>
           ) : (

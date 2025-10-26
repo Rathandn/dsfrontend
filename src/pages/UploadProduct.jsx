@@ -4,8 +4,6 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Check, Loader2, LoaderCircle, LoaderIcon } from 'lucide-react'
 import ImageUploader from '../components/ImageUploader'
 import API from '../api/axiosInstance'
-import { useQuery } from '@tanstack/react-query'
-import Loader from '../components/Loader'
 import { useTemplates, useCreateTemplate } from '../hooks/useTemplates'
 import { useCategories } from '../hooks/useCategories'
 

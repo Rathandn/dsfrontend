@@ -6,6 +6,7 @@ import API from '../api/axiosInstance'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Loader from '../components/loader'
 
+
 const AdminCategories = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()

@@ -92,6 +92,56 @@ const Home = () => {
           </motion.h2>
 
           {isLoading ? (
+  // 🧩 Skeleton shimmer placeholders
+  <div className="grid md:grid-cols-3 gap-8">
+    {[...Array(6)].map((_, idx) => (
+      <motion.div
+        key={idx}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: idx * 0.1 }}
+        className="relative h-80 rounded-2xl overflow-hidden bg-gray-200 animate-pulse"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer bg-[length:200%_100%]" />
+      </motion.div>
+    ))}
+  </div>
+) : (
+  <div className="grid md:grid-cols-3 gap-8">
+    {categories.map((cat, idx) => (
+      <motion.div
+        key={cat._id || cat.id}
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: idx * 0.1 }}
+        onClick={() => navigate(`/products/${cat.slug}`)}
+        className="relative h-80 rounded-2xl overflow-hidden cursor-pointer group bg-gray-100"
+      >
+        {/* ✅ Smooth fade-in image with fallback */}
+        <img
+          src={cat.image || '/placeholder.jpg'}
+          alt={cat.name}
+          loading="lazy"
+          onError={(e) => (e.target.src = '/placeholder.jpg')}
+          className="w-full h-full object-cover opacity-0 transition-all duration-700 ease-in-out group-hover:scale-110"
+          onLoad={(e) => (e.target.style.opacity = 1)}
+        />
+
+        {/* Overlay with gradient and text */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6">
+          <div>
+            <h3 className="text-2xl font-bold text-white mb-2">{cat.name}</h3>
+            <p className="text-gray-200">{cat.count} Products</p>
+          </div>
+        </div>
+      </motion.div>
+    ))}
+  </div>
+)}
+
+
+          {/* {isLoading ? (
             <p className="text-center text-gray-500"><Loader/></p>
           ) : (
             <div className="grid md:grid-cols-3 gap-8">
@@ -124,7 +174,7 @@ const Home = () => {
                 </motion.div>
               ))}
             </div>
-          )}
+          )} */}
         </div>
       </section>
     </div>
